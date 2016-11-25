@@ -1,6 +1,5 @@
 ---
 layout: default
-title: I love ZYT
 ---
 
 <body>
@@ -10,7 +9,6 @@ title: I love ZYT
         <h1>Jasper Shen</h1>
         <a href="http://weibo.com/2717397881/profile?topnav=1&wvr=6&is_all=1" target="_blank"><img src="http://www.weibo.com/favicon.ico" alt="" width="25"/></a>
         <a href="https://github.com/jaspershen" target="_blank"><img src="http://d36xtkk24g8jdx.cloudfront.net/bluebar/00c6602/images/ico/favicon.ico" alt="" width="22"/></a>
-        <a href="https://github.com/jaspershen" target="_blank"><img href="/new.ico" alt="" width="22"/></a>
       </div>
       <div id="particles-js"></div>
     </div>
