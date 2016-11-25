@@ -56,7 +56,7 @@ The demo data have been added in your work directory and organized in you work d
 1. "data.csv" is the metabolomic dataset you want to process. Rows are features and columns are feature abundance of samples and information of features. The information of features must contain "name" (feature name), "mz" (mass to change ratio) and "rt" (retention time). Other information of features are optional, for example "isotopes" and "adducts". The name of sample can contain ".", but cannot contain "-" and space. And the start of sample name cannot be number. **For example, "A210.a" and "A210a" are valid, and "210a" or "210-a" are invalid.**
 2. "sample.information.csv" is sample information for metabolomic dataset. Column 1 is "sample.name" which is the names of subject and QC samples. Please confirm that the sample names in "sample.information.csv" and "data.csv" are completely same. Column 2 is "injection.order" which is the injection order of QC and subject samples. Column 3 is "class", which is used to distinguish "QC" and "Subject" samples. Column 4 is "batch" to provide acquisition batch information for samples. Column 5 is "group", which is used to label the group of subject sample, for example, "control" and "case". The "group" of QC samples is labeled as "QC".
 
-![Figure2 Data organisation of MetCleaning](/images/metcleaning/data organisation.tif)
+![Figure2 Data organisation of MetCleaning](/images/metcleaning/data organisation.jpg)
 
 Then you can run *MetClean* function to do data cleaning of data. All the arguments of *MetClean* can be found in the other functions in *MetCleaning*. You can use *help(package = "MetCleaning")* to see the help page of *MetCleaning*.
 
@@ -70,11 +70,11 @@ MetClean(polarity = "positive")
 Running results of *MetClean*
 1.Missing or zero values filtering. In the missing or zero value filtering step, if there are samples which beyond the threshold you set, you should decide to filter them or not. We recommend to remove all of them as Figure 3 shows.
 
-![Figure3 Missing or zero value filtering](/images/metcleaning/mv filter.png)
+![Figure3 Missing or zero value filtering](/images/metcleaning/mv filter.jpg)
 
 2.Sample filtering. In the QC or subject sample filtering step (based on PCA), if there are samples which beyond the threshold you set, you should decide to filter them or not. We don't recommend to remove them as Figure 4 shows, because they should be consired combined other information.
 
-![Figure4 Sample filtering](/images/metcleaning/sample filter.png)
+![Figure4 Sample filtering](/images/metcleaning/sample filter.jpg)
 
 3.Output files. Output files of *MetClean* are listed as Figure 5 shows.
 (1) "1MV overview", "2MV filter", "3Zero overview" and "4Zero filter" are missing and zero values filtering information.
@@ -87,7 +87,7 @@ Running results of *MetClean*
 (8) **"data_after_pre.csv", "qc.info.csv" and "subject.info"** are the data and sample information after data cleaning.
 (9) "intermediate" is the intermediate data during processing.
 
-![Figure5 Output files of *MetClean*](/images/metcleaning/output files of MetClean.tif)
+![Figure5 Output files of *MetClean*](/images/metcleaning/output files of MetClean.jpg)
 
 ## **Statistical analysis**
 ******************************************
@@ -107,7 +107,7 @@ write.csv(new.group, "new.group.csv", row.names = FALSE)
 
 The demo data have been added in your work directory. "new.group.csv" is a sample.information which has been changed the group information you want to use for statistical analysis. For the sample which you don't want to use them for statistical analysis, you can set they group information as NA like Figure 6 shows.
 
-![Figure6 new group information](/images/metcleaning/new.group.tif)
+![Figure6 new group information](/images/metcleaning/new.group.jpg)
 
 code 5: Running of *MetStat*
 
@@ -118,11 +118,11 @@ MetStat(MetFlowData = met.data.after.pre, new.group = TRUE)
 Running results of *MetStat*
 1.Sample removing. Firstly, you need to confirm the samples which you want to remove form dataset as Figure 7 shows.
 
-![Figure7 sample removing confirmation](/images/metcleaning/sample remove.png)
+![Figure7 sample removing confirmation](/images/metcleaning/sample remove.jpg)
 
 2.Number of component selection in PLS-DA analysis. In PLS-DA analysis, you should manually select the best choice of the number of component. When the Console show "How many comps do you want to see?", you can type 10 and enter "Enter" key. Then a MSE plot is showing, and the best number of component is the one has the smallest CV values. So type the number (in this example is 4) and enter "Enter" key.
 
-![Figure8 Number of component selection in PLS-DA analysis](/images/metcleaning/PLS analysis.tif)
+![Figure8 Number of component selection in PLS-DA analysis](/images/metcleaning/PLS analysis.jpg)
 
 3.Output files. Output files of *MetStat* are listed as Figure 9 shows.
 (1) "12PCA analysis" is the PCA score plot.
@@ -132,6 +132,6 @@ Running results of *MetStat*
 (5) **"data_after_stat.csv", "qc.info.csv" and "subject.info"** are the data and sample information after statistical analysis.
 (6) "intermediate" is the intermediate data during processing.
 
-![Figure9 Output files of *MetStat*](/images/metcleaning/output files of MetStat.tif)
+![Figure9 Output files of *MetStat*](/images/metcleaning/output files of MetStat.jpg)
 
 [JasperShen]:    http://jaspershen.com  "JasperShen"
