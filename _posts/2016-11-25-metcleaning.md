@@ -1,7 +1,7 @@
 ---
 layout: post
 title: MetCleaning instruction
-description: 断断续续，鼓捣了好几天，终于搞懂了怎么使用github建立博客，值得纪念一下。
+description: The instruction of MetCleaning.
 category: blog
 ---
 
@@ -15,8 +15,8 @@ category: blog
 ******************************************
 ### *MetCleaning* is published in github [(link)](https://github.com/jaspershen/MetCleaning). So you can install it via to github.
 
-####code 1: Installation of *MetCleaning*
-```{r, eval= FALSE}
+#### code 1: Installation of *MetCleaning*
+```
 ##pcaMethods and impute should be installed form bioconductor
 ##pcaMethos
 source("http://bioconductor.org/biocLite.R")
@@ -37,8 +37,8 @@ source("http://bioconductor.org/biocLite.R")
 ******************************************
 ### Data cleaning is integrated as a function named as *MetClean* in *MetCleaning*. We use the demo data as the example. Copy the code below and paste in you R console.
 
-####code 2: Demo data of *MetClean*
-```{r, eval = FALSE}
+#### code 2: Demo data of *MetClean*
+```
 ##demo data
 data(data, package = "MetCleaning")
 data(sample.information, package = "MetCleaning")
@@ -58,13 +58,13 @@ write.csv(sample.information , "sample.information.csv", row.names = FALSE)
 
 ### Then you can run *MetClean* function to do data cleaning of data. All the arguments of *MetClean* can be found in the other functions in *MetCleaning*. You can use *help(package = "MetCleaning")* to see the help page of *MetCleaning*.
 
-####code 3: Running of *MetClean*
-```{r, eval = FALSE}
+#### code 3: Running of *MetClean*
+```
 ##demo data
 MetClean(polarity = "positive")
 ```
 
-###Running results of *MetClean*
+### Running results of *MetClean*
 #### 1.Missing or zero values filtering. In the missing or zero value filtering step, if there are samples which beyond the threshold you set, you should decide to filter them or not. We recommend to remove all of them as Figure 3 shows.
 
 ![Figure3 Missing or zero value filtering](/images/metcleaning/mv filter.png)
@@ -91,7 +91,7 @@ MetClean(polarity = "positive")
 ### Data statistical analysis is integrated as a function named as *MetStat* in *MetCleaning*. We use the demo data as the example. **Please note that now *MetStat* can only process two class data.** Copy the code below and paste in you R console.
 
 ####code 4: Demo data of *MetStat*
-```{r, eval = FALSE}
+```
 data("met.data.after.pre", package = "MetCleaning")
 data(new.group, package = "MetCleaning")
 ##create a folder for MetStat demo
@@ -105,12 +105,12 @@ write.csv(new.group, "new.group.csv", row.names = FALSE)
 
 ![Figure6 new group information](/images/metcleaning/new.group.tif)
 
-####code 5: Running of *MetStat*
-```{r, eval = FALSE}
+#### code 5: Running of *MetStat*
+```
 MetStat(MetFlowData = met.data.after.pre, new.group = TRUE)
 ```
 
-###Running results of *MetStat*
+### Running results of *MetStat*
 #### 1.Sample removing. Firstly, you need to confirm the samples which you want to remove form dataset as Figure 7 shows.
 
 ![Figure7 sample removing confirmation](/images/metcleaning/sample remove.png)
