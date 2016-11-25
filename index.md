@@ -1,6 +1,5 @@
 ---
 layout: default
-title: I love ZYT
 ---
 
 <body>
