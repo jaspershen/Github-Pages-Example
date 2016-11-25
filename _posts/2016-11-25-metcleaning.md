@@ -39,6 +39,7 @@ source("http://bioconductor.org/biocLite.R")
 Data cleaning is integrated as a function named as *MetClean* in *MetCleaning*. We use the demo data as the example. Copy the code below and paste in you R console.
 
 code 2: Demo data of *MetClean*
+
 ```
 ##demo data
 data(data, package = "MetCleaning")
@@ -60,6 +61,7 @@ The demo data have been added in your work directory and organized in you work d
 Then you can run *MetClean* function to do data cleaning of data. All the arguments of *MetClean* can be found in the other functions in *MetCleaning*. You can use *help(package = "MetCleaning")* to see the help page of *MetCleaning*.
 
 code 3: Running of *MetClean*
+
 ```
 ##demo data
 MetClean(polarity = "positive")
@@ -92,6 +94,7 @@ Running results of *MetClean*
 Data statistical analysis is integrated as a function named as *MetStat* in *MetCleaning*. We use the demo data as the example. **Please note that now *MetStat* can only process two class data.** Copy the code below and paste in you R console.
 
 code 4: Demo data of *MetStat*
+
 ```
 data("met.data.after.pre", package = "MetCleaning")
 data(new.group, package = "MetCleaning")
@@ -107,6 +110,7 @@ The demo data have been added in your work directory. "new.group.csv" is a sampl
 ![Figure6 new group information](/images/metcleaning/new.group.tif)
 
 code 5: Running of *MetStat*
+
 ```
 MetStat(MetFlowData = met.data.after.pre, new.group = TRUE)
 ```
