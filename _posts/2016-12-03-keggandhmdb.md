@@ -108,26 +108,6 @@ names(kegg.met) <- c("gs", "pathwaynames", "metid")
 save(kegg.met, file = "kegg.met")
 ```
 
-
-code 1: Installation of *MetCleaning*
-
-```
-##pcaMethods and impute should be installed form bioconductor
-##pcaMethos
-source("http://bioconductor.org/biocLite.R")
-    biocLite("pcaMethods")
-##impute
-source("http://bioconductor.org/biocLite.R")
-    biocLite("impute")
- if(!require(devtools)) {
-  install.packages("devtools")
- }
- library(devtools)
- install_github("jaspershen/MetCleaning")
- library(MetCleaning)
- help(package = "MetCleaning")
-```
-
 ## **爬取HMDB通路信息**
 ******************************************
 首先爬取HMDB的通路信息。
