@@ -10,8 +10,63 @@ category: blog
 虽然相对于python来说，R语言爬虫并不是那么流行，但是对于比较小的数据爬取量，使用R还是很方便的。R的数据爬取比较流行的是利用XML和RCurl包进行爬取，在这篇博客里面，我就利用XML和RCurl包进行KEGG和HMDB的数据爬取。
 ## **爬取KEGG通路信息**
 ******************************************
-*MetCleaning* is published in github [(link)](https://github.com/jaspershen/MetCleaning). So you can install it via to github.
+因为我需要的信息是KEGG的通路信息，比较简单，也就是每个通路包含哪些代谢物，只要人的metaboloic pathway，因此，我需要先将KEGG中的通路的网页链接拿到。
+```
+library(XML)
+library(RCurl)
+##从kegg主页上抓取代谢通路的url
+URL = getURL("http://www.genome.jp/kegg/pathway.html#global")
+doc<-htmlParse(URL,encoding="utf-8")
+xpath.a <- "//a/@href"
+node<-getNodeSet(doc, xpath.a)
+url1 <- sapply(node, as.character)
 
+xpath.b <- "//a[@href]"
+name <- getNodeSet(doc, xpath.b)
+name <- sapply(name, xmlValue)
+
+name2 <- name[59:247]
+url2 <- url1[59:247]
+
+url3 <- url2[grep("show", url2)]
+
+pathwat.name <- NULL
+metabolite.id <- list()
+metabolite.name <- list()
+for (i in 1:length(url3)) {
+  cat(paste(i,"/",length(url3)))
+  cat("\n")
+  URL <- paste("http://www.genome.jp", url3[i], sep = "")
+  URL = getURL(URL)
+  doc<-htmlParse(URL,encoding="utf-8")
+  xpath <- "//option[@value='hsa']"
+  node<-getNodeSet(doc, xpath)
+  if (length(node) ==0 ) {
+    cat("No human pathwat.")
+    next()
+  }else{
+    URL <- paste("http://www.genome.jp", url3[i], sep = "")
+    URL <- gsub(pattern = "map=map", replacement = "map=hsa", x = URL)
+    doc<-htmlParse(URL,encoding="utf-8")
+    xpath1 <- "//title"
+    node<-getNodeSet(doc, xpath1)
+    pathway.name[i] <- xmlValue(node[[1]])
+    pathway.name[i] <- substr(pathway.name[i], start = 2, stop = nchar(pathway.name[i])-1)
+
+    xpath2 <- "//area[@shape='circle']/@title"
+    node<-getNodeSet(doc, xpath2)
+    metabolite <- lapply(node, function(x) as.character(x))
+    metabolite.name[[i]] <- substr(metabolite, start = 9, nchar(metabolite)-1)
+    metabolite.id[[i]] <- substr(metabolite, start = 1, stop = 6)
+  }
+}
+
+
+```
+得到所有代谢通路的信息之后，下面就要对每个通路中的代谢物信息进行抓取。
+```
+
+```
 code 1: Installation of *MetCleaning*
 
 ```
