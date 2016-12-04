@@ -11,14 +11,15 @@ category: blog
 ## **爬取KEGG通路信息**
 ******************************************
 因为我需要的信息是KEGG的通路信息，比较简单，也就是每个通路包含哪些代谢物，只要人的metaboloic pathway，因此，我需要先将KEGG中的通路的网页链接拿到。
+
 ```
 library(XML)
 library(RCurl)
 ##从kegg主页上抓取代谢通路的url
 URL = getURL("http://www.genome.jp/kegg/pathway.html#global")
-doc<-htmlParse(URL,encoding="utf-8")
+doc <- htmlParse(URL,encoding="utf-8")
 xpath.a <- "//a/@href"
-node<-getNodeSet(doc, xpath.a)
+node <- getNodeSet(doc, xpath.a)
 url1 <- sapply(node, as.character)
 
 xpath.b <- "//a[@href]"
@@ -60,13 +61,53 @@ for (i in 1:length(url3)) {
     metabolite.id[[i]] <- substr(metabolite, start = 1, stop = 6)
   }
 }
-
-
-```
-得到所有代谢通路的信息之后，下面就要对每个通路中的代谢物信息进行抓取。
 ```
 
+下面对爬取到的代谢通路进行筛选。
+
 ```
+idx <- which(!is.na(pathway.name))
+pathway.name1 <- pathway.name[idx]
+metabolite.id1 <- metabolite.id[idx]
+metabolite.name1 <- metabolite.name[idx]
+
+pathway.name2 <- pathway.name1[-c(83,84)]
+metabolite.id2 <- metabolite.id1[-c(83,84)]
+metabolite.name2 <- metabolite.name1[-c(83,84)]
+```
+
+将爬取到的信息保存输出。
+
+```
+met.name <- NULL
+met.id <- NULL
+path.name <- NULL
+for(i in 1:length(pathway.name2)) {
+  met.name[i] <- paste(metabolite.name2[[i]], collapse = ";")
+  met.id[i] <- paste(metabolite.id2[[i]], collapse = ";")
+  path.name[i] <- gsub(pattern = "KEGG PATHWAY: ", "", pathway.name2[i])
+  path.name[i] <- substr(path.name[i], start = 1, stop = nchar(path.name[i])-23)
+}
+
+
+kegg <- data.frame(path.name, met.name, met.id)
+write.csv(kegg, "kegg.csv", row.names = F)
+
+save(path.name, file = "path.name")
+save(met.name, file = "met.name")
+save(met.id, file = "met.id")
+
+kegg.met <- list()
+kegg.met[[2]] <- sapply(path.name, list)
+kegg.met[[1]] <- metabolite.name2
+kegg.met[[3]] <- metabolite.id2
+
+names(kegg.met) <- c("gs", "pathwaynames", "metid")
+
+save(kegg.met, file = "kegg.met")
+```
+
+
 code 1: Installation of *MetCleaning*
 
 ```
