@@ -128,104 +128,251 @@ source("http://bioconductor.org/biocLite.R")
  help(package = "MetCleaning")
 ```
 
-## **Data cleaning**
+## **爬取HMDB通路信息**
 ******************************************
-Data cleaning is integrated as a function named as *MetClean* in *MetCleaning*. We use the demo data as the example. Copy the code below and paste in you R console.
-
-code 2: Demo data of *MetClean*
+首先爬取HMDB的通路信息。
 
 ```
-##demo data
-data(data, package = "MetCleaning")
-data(sample.information, package = "MetCleaning")
-##demo work directory
-dir.create("Demo for MetCleaning")
-setwd("Demo for MetCleaning")
-##write files
-write.csv(data, "data.csv", row.names = FALSE)
-write.csv(sample.information , "sample.information.csv", row.names = FALSE)
+##抓取HMDB通路信息
+library(XML)
+library(RCurl)
+
+hmdb.main <- "http://www.hmdb.ca/pathways?page="
+hmdb.main <- paste(hmdb.main, c(2:46), sep = "")
+hmdb.main <- c("http://www.hmdb.ca/pathways", hmdb.main)
+
+##从HMDB主页上抓取代谢通路的url
+path.name <- list()
+metabolite.id <- list()
+spec <- list()
+path.class <- list()
+for (i in 40:length(hmdb.main)) {
+  cat(paste("page",i))
+  cat(":")
+  URL = getURL(hmdb.main[i])
+  doc<-htmlParse(URL,encoding="utf-8")
+  xpath1 <- "//div[@class='panel-heading']"
+  node1 <- getNodeSet(doc, xpath1)
+  pathway.name <- sapply(node1, xmlValue)
+
+  cat(paste(length(pathway.name), "pathways"))
+  cat("\n")
+
+  path.name[[i]] <- pathway.name
+
+  xpath2 <- "//div[@class='panel-body']"
+  node2 <- getNodeSet(doc, xpath2)
+
+  metabolite <- sapply(node2, xmlValue)
+  metabolite <- unname(sapply(metabolite, function(x) {gsub("Show", " ", x)}))
+
+  idx <- sapply(metabolite, function(x) {gregexpr("HMDB[0-9]{5}", x)})
+
+  met.id <- list()
+  for (j in 1:length(idx)) {
+    id <- NULL
+    for (k in 1:length(idx[[j]])) {
+      id[k] <- substr(metabolite[j], idx[[j]][k], idx[[j]][k]+8)
+    }
+    met.id[[j]] <- id
+  }
+
+  metabolite.id[[i]] <- met.id
+
+  xpath.a <- "//a[@class='link-out']/@href"
+  node<-getNodeSet(doc, xpath.a)
+
+  url1 <- sapply(node, as.character)
+  url1 <- substr(url1, start = 1, stop = 29)
+  url1 <- url1[!duplicated(url1)]
+
+
+  ###获取通路的人种和类别
+  species <- NULL
+  metabolic <- NULL
+  for (t in 1:length(url1)) {
+    cat(paste("t:",t));cat(" ")
+    URL = getURL(url1[t])
+    doc <- htmlParse(URL,encoding="utf-8")
+    xpath <- "//div[@class='species']/text()"
+    node <- getNodeSet(doc, xpath)
+    species[t] <- xmlValue(node[[1]])
+
+    xpath <- "//div[@id='des_subject']/text()"
+    node <- getNodeSet(doc, xpath)
+    metabolic[t] <- xmlValue(node[[1]])
+
+  }
+
+  spec[[i]] <- species
+  path.class[[i]] <- metabolic
+
+}
 ```
 
-The demo data have been added in your work directory and organized in you work directory as Figure 2 shows. It contains two files, "data.csv" and "sample.information.csv".
-1. "data.csv" is the metabolomic dataset you want to process. Rows are features and columns are feature abundance of samples and information of features. The information of features must contain "name" (feature name), "mz" (mass to change ratio) and "rt" (retention time). Other information of features are optional, for example "isotopes" and "adducts". The name of sample can contain ".", but cannot contain "-" and space. And the start of sample name cannot be number. **For example, "A210.a" and "A210a" are valid, and "210a" or "210-a" are invalid.**
-2. "sample.information.csv" is sample information for metabolomic dataset. Column 1 is "sample.name" which is the names of subject and QC samples. Please confirm that the sample names in "sample.information.csv" and "data.csv" are completely same. Column 2 is "injection.order" which is the injection order of QC and subject samples. Column 3 is "class", which is used to distinguish "QC" and "Subject" samples. Column 4 is "batch" to provide acquisition batch information for samples. Column 5 is "group", which is used to label the group of subject sample, for example, "control" and "case". The "group" of QC samples is labeled as "QC".
-
-![Figure2 Data organisation of MetCleaning](/images/metcleaning/data organisation.jpg)
-
-Then you can run *MetClean* function to do data cleaning of data. All the arguments of *MetClean* can be found in the other functions in *MetCleaning*. You can use *help(package = "MetCleaning")* to see the help page of *MetCleaning*.
-
-code 3: Running of *MetClean*
+对爬取到的代谢通路进行筛选。
 
 ```
-##demo data
-MetClean(polarity = "positive")
+save(path.name, file = "path.name")
+save(metabolite.id, file = "metabolite.id")
+save(spec, file = "spec")
+save(path.class, file = "path.class")
+
+
+pathway.name <- NULL
+metabolite.ID <- list()
+species <- NULL
+pathway.class <- NULL
+for (i in 1:length(path.name)) {
+  pathway.name <- c(pathway.name, path.name[[i]])
+  metabolite.ID <- c(metabolite.ID, metabolite.id[[i]])
+  species <- c(species, spec[[i]])
+  pathway.class <- c(pathway.class, path.class[[i]])
+}
+
+
+pathway.class <- substr(x = pathway.class, 1, regexpr("\\\n", pathway.class)-1)
+
+metabolite.name <- list()
+for (i in 1:length(metabolite.ID)) {
+  id <- metabolite.ID[[i]]
+  idx <- match(id, hmdbdatabase[,1])
+  name <- hmdbdatabase[idx,2]
+  metabolite.name[[i]] <- name
+}
+
+a <- unlist(lapply(metabolite.name, function(x) {paste(x, collapse = ";")}))
+b <- unlist(lapply(metabolite.ID, function(x) {paste(x, collapse = ";")}))
+
+idx <- grep("Metabolic", pathway.class)
+
+metabolite.name <- metabolite.name[idx]
+metabolite.ID <- metabolite.ID[idx]
+pathway.name <- pathway.name[idx]
+pathway.class <- pathway.class[idx]
+species <- species[idx]
+
+hmdb.pathway <- data.frame(pathway.name, pathway.class,a, b)[idx,]
+write.csv(hmdb.pathway, "hmdb.pathway.csv")
+
+a <- list()
+for (i in 1:length(pathway.name)) {
+  a[[i]] <- pathway.name[i]
+}
+
+pathway.name <- a
+
+hmdb.met <- list(gs = metabolite.name, pathwaynames = pathway.name, id = metabolite.ID)
+save(hmdb.met, file = "hmdb.met")
 ```
 
-Running results of *MetClean*
-1.Missing or zero values filtering. In the missing or zero value filtering step, if there are samples which beyond the threshold you set, you should decide to filter them or not. We recommend to remove all of them as Figure 3 shows.
-
-![Figure3 Missing or zero value filtering](/images/metcleaning/mv filter.jpg)
-
-2.Sample filtering. In the QC or subject sample filtering step (based on PCA), if there are samples which beyond the threshold you set, you should decide to filter them or not. We don't recommend to remove them as Figure 4 shows, because they should be consired combined other information.
-
-![Figure4 Sample filtering](/images/metcleaning/sample filter.jpg)
-
-3.Output files. Output files of *MetClean* are listed as Figure 5 shows.
-(1) "1MV overview", "2MV filter", "3Zero overview" and "4Zero filter" are missing and zero values filtering information.
-(2) "5QC outlier filter" and "6Subject outlier filter" are sample filtering based on PCA information.
-(3) "7Normalization result" is the data normalization information for each batch.
-(4) "8Batch effect" is the batch effect both in before and after data cleaning.
-(5) "9metabolite plot" is the scatter plot for each feature.
-(6) "10Data overview" is the overview of data.
-(7) "11RSD overview" is the RSD distribution for each batch both before and after data cleaning.
-(8) **"data_after_pre.csv", "qc.info.csv" and "subject.info"** are the data and sample information after data cleaning.
-(9) "intermediate" is the intermediate data during processing.
-
-![Figure5 Output files of *MetClean*](/images/metcleaning/output files of MetClean.jpg)
-
-## **Statistical analysis**
+## **爬取HMDB代谢物信息**
 ******************************************
-Data statistical analysis is integrated as a function named as *MetStat* in *MetCleaning*. We use the demo data as the example. **Please note that now *MetStat* can only process two class data.** Copy the code below and paste in you R console.
-
-code 4: Demo data of *MetStat*
+首先，获得所有代谢物的页面链接。
 
 ```
-data("met.data.after.pre", package = "MetCleaning")
-data(new.group, package = "MetCleaning")
-##create a folder for MetStat demo
-dir.create("Demo for MetStat")
-setwd("Demo for MetStat")
-## export the demo data as csv
-write.csv(new.group, "new.group.csv", row.names = FALSE)
+###抓取HMDB代谢物信息
+library(XML)
+library(RCurl)
+
+hmdb.main <- "http://www.hmdb.ca/metabolites?c=hmdb_id&d=up&page="
+hmdb.main <- paste(hmdb.main, c(2:1681), sep = "")
+hmdb.main <- c("http://www.hmdb.ca/metabolites", hmdb.main)
+
+##从HMDB主页上抓取代谢物的url
+url <- NULL
+for (i in 1:length(hmdb.main)) {
+  cat(i)
+  cat(" ")
+  URL = getURL(hmdb.main[i])
+  doc<-htmlParse(URL,encoding="utf-8")
+  xpath <- "//a[@href]/@href"
+  node<-getNodeSet(doc, xpath)
+  url1 <- sapply(node, as.character)
+  url1 <- url1[grep("metabolites/HMDB", url1)]
+  url1 <- unique(url1)
+  url <- c(url, url1)
+}
+
+url1 <- paste("http://www.hmdb.ca/",url, sep = "")
+save(url1, file = "url1")
 ```
 
-The demo data have been added in your work directory. "new.group.csv" is a sample.information which has been changed the group information you want to use for statistical analysis. For the sample which you don't want to use them for statistical analysis, you can set they group information as NA like Figure 6 shows.
-
-![Figure6 new group information](/images/metcleaning/new.group.jpg)
-
-code 5: Running of *MetStat*
+下面开始进行代谢物信息爬取。
 
 ```
-MetStat(MetFlowData = met.data.after.pre, new.group = TRUE)
+library(mailR)
+for (i in 1:400) {
+  cat(paste((i-1)*100+1,"-",i*100,"/", length(url1), sep = ""))
+  cat("\n")
+  URL <- getURL(url1[((i-1)*100+1):(i*100)])
+  doc <- htmlParse(URL, encoding="utf-8")
+  xpath1 <- "//tr"
+  node1 <- getNodeSet(doc, xpath1)
+  node1 <- sapply(node1, xmlValue)
+
+  HMDB_ID[((i-1)*100+1):(i*100)] <-
+    gsub(pattern = "HMDB ID", replacement = "",node1[grep("HMDB ID", node1)])
+
+  Common_Name[((i-1)*100+1):(i*100)] <-
+    gsub("Common Name", "",node1[grep("Common Name", node1)])
+
+  temp <- gsub("SynonymsValueSource", "",node1[grep("Synonyms", node1)])
+  temp <- gsub("Generator", ";",temp)
+  temp <- gsub("ChEMBL", ";",temp)
+  temp <- gsub("ChEBI", ";",temp)
+  Synonyms[((i-1)*100+1):(i*100)] <-
+    gsub("HMDB", ";",temp)
+
+  Chemical_Formula[((i-1)*100+1):(i*100)] <-
+    gsub("Chemical Formula", "",node1[grep("Chemical Formula", node1)])
+
+  Monoisotopic_Molecular_Weight[((i-1)*100+1):(i*100)] <-
+    gsub("Monoisotopic Molecular Weight", "",node1[grep("Monoisotopic Molecular Weight", node1)])
+
+  IUPAC_Name[((i-1)*100+1):(i*100)] <-
+    gsub("IUPAC Name", "",node1[grep("IUPAC Name", node1)])
+
+  Traditional_Name[((i-1)*100+1):(i*100)] <-
+    gsub("Traditional Name", "",node1[grep("Traditional Name", node1)])
+
+  CAS_Registry_Number[((i-1)*100+1):(i*100)] <-
+    gsub("CAS Registry Number", "",node1[grep("CAS Registry Number", node1)])
+
+  Origin[((i-1)*100+1):(i*100)] <-
+    gsub("Origin", "",node1[grep("Origin", node1)])
+
+  path <- gsub("PathwaysNameSMPDB LinkKEGG Link", "",node1[grep("Pathways", node1)])
+  Pathways[((i-1)*100+1):(i*100)] <-
+    substr(path, 1, stop = regexpr("SMP", path)-1)
+
+  ##每100次保存一次
+  if (i*100 %in% seq(100, 60000, by = 100)) {
+    cat("save data...\n")
+    save(HMDB_ID,
+         Common_Name,
+         Synonyms,
+         Chemical_Formula,
+         Monoisotopic_Molecular_Weight,
+         IUPAC_Name,
+         Traditional_Name,
+         CAS_Registry_Number,
+         Origin,
+         Pathways,
+         file = paste("hmdb.data",i*100))
+
+    send.mail(from = "yourmail1@163.com",
+              to = c("youmail20@163.com"),
+              subject = paste("WZZ GO ON:", i),
+              body = paste("WZZ still go on", i),
+              smtp = list(host.name = "smtp.163.com", port = 465, user.name = "yourmail1", passwd = "passward", ssl = TRUE),
+              authenticate = TRUE,
+              send = TRUE)
+  }
+
+}
+
 ```
+因为代谢物信息比较大，可能需要一晚上，因此想到了没爬取100个，就给自己发一封邮件，来对程序进行监控。
 
-Running results of *MetStat*
-1.Sample removing. Firstly, you need to confirm the samples which you want to remove form dataset as Figure 7 shows.
-
-![Figure7 sample removing confirmation](/images/metcleaning/sample remove.jpg)
-
-2.Number of component selection in PLS-DA analysis. In PLS-DA analysis, you should manually select the best choice of the number of component. When the Console show "How many comps do you want to see?", you can type 10 and enter "Enter" key. Then a MSE plot is showing, and the best number of component is the one has the smallest CV values. So type the number (in this example is 4) and enter "Enter" key.
-
-![Figure8 Number of component selection in PLS-DA analysis](/images/metcleaning/PLS analysis.jpg)
-
-3.Output files. Output files of *MetStat* are listed as Figure 9 shows.
-(1) "12PCA analysis" is the PCA score plot.
-(2) "13PLS analysis" contains the PLS-DA results.
-(3) "14heatmap" is the heatmap.
-(4) "15marker selection" contains the information of markers, volcano plot and boxplots of markers.
-(5) **"data_after_stat.csv", "qc.info.csv" and "subject.info"** are the data and sample information after statistical analysis.
-(6) "intermediate" is the intermediate data during processing.
-
-![Figure9 Output files of *MetStat*](/images/metcleaning/output files of MetStat.jpg)
-
-[JasperShen]:    http://jaspershen.com  "JasperShen"
+写的比较粗糙，有时间再好好修改一下。
