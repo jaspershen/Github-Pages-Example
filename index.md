@@ -11,15 +11,7 @@ layout: default
         <a href="https://github.com/jaspershen" target="_blank"><img src="/github.ico" alt="Github" width="40"/></a>
         <a href="https://www.zhihu.com/people/shen-zu-tao-73/activities" target="_blank"><img src="/zhihu.ico" alt="知乎" width="40"/></a>
         <a href="http://www.metabolomics-china.org/" target="_blank"><img src="/zhulab.ico" alt="zhulab" width="40"/></a>
-
-        <a href="https://github.com/jaspershen" target="_blank"><img src="/github.ico" alt="Github" width="40"/></a>
-        <a href="https://www.zhihu.com/people/shen-zu-tao-73/activities" target="_blank"><img src="/zhihu.ico" alt="知乎" width="40"/></a>
-        <a href="http://www.metabolomics-china.org/" target="_blank"><img src="/zhulab.ico" alt="zhulab" width="40"/></a>
-
-        <a href="https://github.com/jaspershen" target="_blank"><img src="/github.ico" alt="Github" width="40"/></a>
-        <a href="https://www.zhihu.com/people/shen-zu-tao-73/activities" target="_blank"><img src="/zhihu.ico" alt="知乎" width="40"/></a>
-        <a href="http://www.metabolomics-china.org/" target="_blank"><img src="/zhulab.ico" alt="zhulab" width="40"/></a>
-
+        <h2>我的链接</h2>
       </div>
       <div id="particles-js"></div>
     </div>
